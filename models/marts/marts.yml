@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: fct_order_items
+    columns:
+      - name: order_item_id
+        tests:
+          - unique
+          - not_null

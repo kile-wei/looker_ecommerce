@@ -1,0 +1,21 @@
+# ==========================================
+# dbt core ignores
+# ==========================================
+target/
+dbt_packages/
+logs/
+dbt_internal_packages/
+
+# ==========================================
+# OS & Environment ignores 
+# ==========================================
+.DS_Store
+
+.env
+.env.*
+
+# Python 
+__pycache__/
+*.pyc
+.venv/
+venv/
