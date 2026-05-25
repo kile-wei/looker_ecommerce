@@ -1,0 +1,164 @@
+version: 2
+
+models:
+  - name: stg_users
+    columns:
+      - name: user_id
+        tests:
+          - unique
+          - not_null
+      - name: email
+        tests:
+          - not_null
+      - name: created_at_utc
+        tests:
+          - not_null
+      - name: gender
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['M', 'F']
+          
+  - name: stg_distribution_centers
+    columns:
+      - name: distribution_center_id
+        tests:
+          - unique
+          - not_null
+      - name: name
+        tests:
+          - unique
+          - not_null
+      - name: latitude
+        tests:
+          - not_null
+      - name: longitude
+        tests:
+          - not_null
+
+  - name: stg_events
+    columns:
+      - name: event_id
+        tests:
+          - unique
+          - not_null
+      - name: session_id
+        tests:
+          - not_null
+      - name: created_at_utc
+        tests:
+          - not_null
+
+  - name: stg_inventory_items
+    columns:
+      - name: inventory_item_id
+        tests:
+          - unique
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+      - name: distribution_center_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_distribution_centers')
+                field: distribution_center_id
+      - name: cost
+        tests:
+          - not_null
+          - not_negative
+      - name: created_at_utc
+        tests:
+          - not_null
+
+  - name: stg_order_items
+    columns:
+      - name: order_item_id
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: inventory_item_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_inventory_items')
+                field: inventory_item_id
+      - name: sale_price
+        tests:
+          - not_null
+          - not_negative
+      - name: created_at_utc
+        tests:
+          - not_null
+
+  - name: stg_orders
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: num_of_item
+        tests:
+          - not_null
+          - not_negative
+      - name: created_at_utc
+        tests:
+          - not_null
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Processing', 'Shipped', 'Complete', 'Cancelled', 'Returned']
+
+  - name: stg_products
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+      - name: distribution_center_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_distribution_centers')
+                field: distribution_center_id
+      - name: cost
+        tests:
+          - not_null
+          - not_negative
+      - name: retail_price
+        tests:
+          - not_negative

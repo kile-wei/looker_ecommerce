@@ -1,0 +1,55 @@
+version: 2
+
+sources:
+  - name: thelook_ecommerce
+    database: bigquery-public-data
+    schema: thelook_ecommerce
+    tables:
+      - name: users
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+              
+      - name: events
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+
+      - name: distribution_centers
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+
+      - name: inventory_items
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+
+      - name: order_items
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+
+      - name: orders
+        columns:
+          - name: order_id
+            tests:
+              - unique
+              - not_null
+
+      - name: products
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
