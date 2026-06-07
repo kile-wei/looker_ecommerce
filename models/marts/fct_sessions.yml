@@ -40,15 +40,54 @@ models:
         description: "Session duration in seconds. Calculated from session_start_at_utc and session_end_at_utc."
         tests:
           - not_null
+          - not_negative
 
       # ==========================================
       # Funnel Status (Booleans/Flags)
       # ==========================================
       - name: has_viewed_home
         description: "Funnel Step 1: Whether the user viewed the home page during the session."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
 
       - name: has_purchased
         description: "Funnel Final Step: Whether the user successfully completed a purchase during the session."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      
+      - name: has_viewed_department
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+      - name: has_viewed_product
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      
+      - name: has_added_to_cart
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      
+      - name: has_cancelled
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
 
       # ==========================================
       # Timestamps
@@ -60,3 +99,4 @@ models:
 
       - name: purchase_at_utc
         description: "Timestamp of successful payment (UTC). NULL if no purchase was made during this session."
+      

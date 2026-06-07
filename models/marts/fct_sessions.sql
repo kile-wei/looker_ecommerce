@@ -1,3 +1,14 @@
+{{
+  config(
+    materialized='table',
+    cluster_by=['user_id', 'traffic_source']
+  )
+}}
+
+-- Grain: one row per session
+-- Primary key: session_id
+-- Purpose: session-level funnel and abandoned cart analysis
+
 with
     session_table as (select * from {{ ref("int_sessions_aggregated") }}),
 

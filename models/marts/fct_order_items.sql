@@ -1,8 +1,19 @@
+{{
+  config(
+    materialized='table',
+    cluster_by=['user_id', 'product_id', 'status']
+  )
+}}
+
+-- Grain: one row per order item
+-- Primary key: order_item_id
+-- Purpose: BI-ready order-item fact table for GMV, margin, product, and fulfillment analysis
+
 -- ==========================================
 -- 1. Import CTEs
 -- ==========================================
 with
-    order_items as (select * from {{ ref("int_order_joined_items") }}),
+    order_items as (select * from {{ ref("int_order_items_enriched") }}),
 
     users as (select * from {{ ref("stg_users") }}),
 
@@ -66,7 +77,22 @@ with
             dc.name as distribution_center_name,
             dc.latitude as distribution_center_latitude,
             dc.longitude as distribution_center_longitude,
-            dc.distribution_center_geom
+            dc.distribution_center_geom,
+
+            --business indices
+            case when oi.status = 'Complete' then true else false end as is_completed_item,
+            case when oi.status = 'Cancelled' then true else false end as is_cancelled_item,
+            case when oi.status = 'Returned' then true else false end as is_returned_item,
+            case 
+                when oi.status not in ('Cancelled', 'Returned') 
+                then oi.sale_price 
+                else 0 
+            end as net_sales_amount,
+            case 
+                when oi.status not in ('Cancelled', 'Returned') 
+                then oi.item_gross_margin 
+                else 0 
+            end as net_gross_margin
         from order_items as oi
         left join users as u
         on oi.user_id = u.user_id

@@ -1,5 +1,5 @@
 with users_metrics as (
-    select * from {{ ref('dim_users_metrics')}}
+    select * from {{ ref('mart_user_lifetime_metrics')}}
 )
 
 select

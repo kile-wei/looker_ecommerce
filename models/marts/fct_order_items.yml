@@ -3,9 +3,9 @@ version: 2
 models:
   - name: fct_order_items
     description: >
-      Core fact table at the order-item grain. 
-      This model serves as a denormalized 'One Big Table' (OBT), combining transactional order item metrics with rich dimensional attributes (users, products, and distribution centers). 
-      It is optimized for downstream BI tools to easily slice and dice revenue and margin metrics by various user demographics and product categories.
+      Enriched order-item fact table. The grain is one row per order item.
+      This model intentionally denormalizes selected user, product, and fulfillment attributes
+      to support BI analysis without complex joins.
 
     columns:
       # ==========================================
@@ -21,19 +21,39 @@ models:
         description: "Foreign key linking to the parent order. Multiple order_item_id can share the same order_id."
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
 
       - name: user_id
         description: "Foreign key linking to the customer who placed the order."
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
 
       - name: product_id
         description: "Foreign key linking to the purchased product."
         tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
           
       - name: distribution_center_id
         description: "Foreign key linking to the distribution center fulfilling the item."
+
+      - name: inventory_item_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_inventory_items')
+                field: inventory_item_id
 
       # ==========================================
       # Transactional Status & Timestamps
@@ -62,11 +82,13 @@ models:
         description: "The price at which the product was sold to the customer."
         tests:
           - not_null
+          - not_negative
         
       - name: inventory_cost
         description: "The underlying cost of the item from the inventory."
         tests:
           - not_null
+          - not_negative
 
       - name: item_gross_margin
         description: "Calculated profitability metric: sale_price minus inventory_cost."

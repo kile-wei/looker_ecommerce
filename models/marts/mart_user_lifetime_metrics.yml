@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: dim_users_metrics
+  - name: mart_user_lifetime_metrics
     description: >
       Dimension table at the user-level grain for the e-commerce store.
 

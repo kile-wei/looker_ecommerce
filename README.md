@@ -76,5 +76,4 @@ Use the following dbt commands to get started:
 dbt deps
 dbt run
 dbt test
-
-
+```

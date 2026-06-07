@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: int_order_joined_items
+  - name: int_order_items_enriched
     description: "A wide table combining order items with orders, users, and products. The grain is order_item_id. This model serves as the foundation for downstream GMV and product margin calculations."
     columns:
       - name: order_item_id
@@ -18,7 +18,7 @@ models:
           - unique
           - not_null
 
-  - name: int_users_purchase
+  - name: int_user_order_metrics
     description: "Aggregates user purchase behavior. It calculates LTV, margin, and order frequency across various rolling time windows (e.g., 7d, 30d, 90d). The grain is user_id."
     columns:
       - name: user_id

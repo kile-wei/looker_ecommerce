@@ -1,5 +1,18 @@
+{{
+  config(
+    materialized='table',
+    cluster_by=['user_id', 'traffic_source', 'country']
+  )
+}}
+-- Grain: one row per registered user
+-- Primary key: user_id
+-- Purpose: user-level lifetime value mart for acquisition, cohort, repeat purchase, and customer value analysis.
+-- Notes:
+--   - Includes both purchasing and non-purchasing registered users.
+--   - LTV windows are calculated relative to each user's first_order_time.
+
 with users_purchase as (
-    select * from {{ ref("int_users_purchase") }}
+    select * from {{ ref("int_user_order_metrics") }}
 ),
 
 final as (
@@ -7,9 +20,7 @@ final as (
             user_id,
 
             -- basic personal information
-            first_name,
-            last_name,
-            email,
+            to_hex(sha256(cast(email as string))) as user_email_hash,
             age,
             gender,
 
@@ -17,11 +28,6 @@ final as (
             country,
             state,
             city,
-            street_address,
-            postal_code,
-            latitude,
-            longitude,
-            user_geom,
 
             -- source and timestamp
             traffic_source,
