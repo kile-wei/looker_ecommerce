@@ -5,6 +5,7 @@ target/
 dbt_packages/
 logs/
 dbt_internal_packages/
+analyses/
 
 # ==========================================
 # OS & Environment ignores 

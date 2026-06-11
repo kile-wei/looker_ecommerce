@@ -1,16 +1,37 @@
 {{
   config(
-    materialized='table',
-    cluster_by=['user_id', 'traffic_source']
+    materialized='incremental',
+    incremental_strategy='merge',
+    unique_key='session_id',
+    partition_by={
+      "field": "session_start_date",
+      "data_type": "date",
+      "granularity": "day"
+    },
+    cluster_by=['traffic_source', 'user_id']
   )
 }}
 
 -- Grain: one row per session
 -- Primary key: session_id
--- Purpose: session-level funnel and abandoned cart analysis
+-- Incremental strategy: merge on session_id
+-- Partition: session_start_date
+-- Cluster: traffic_source, user_id
 
 with
-    session_table as (select * from {{ ref("int_sessions_aggregated") }}),
+    session_table as (
+        select * from {{ ref("int_sessions_aggregated") }}
+        
+        {% if is_incremental() %}
+        where session_start_at_utc >= (
+          select timestamp_sub(
+              coalesce(max(session_start_at_utc), timestamp('1900-01-01')),
+              interval 3 day
+          )
+          from {{ this }}
+              )
+        {% endif %}
+    ),
 
     final as (
         select
@@ -34,6 +55,7 @@ with
             purchase_at_utc,
             session_end_at_utc,
             session_start_at_utc,
+            date(session_start_at_utc) as session_start_date,
 
             -- Derived metric: Calculate session duration
             timestamp_diff(

@@ -1,7 +1,7 @@
 {{
   config(
     materialized='table',
-    cluster_by=['user_id', 'traffic_source', 'country']
+    cluster_by=['country', 'user_id']
   )
 }}
 -- Grain: one row per registered user
