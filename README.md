@@ -34,7 +34,7 @@ Designed a Kimball-inspired dimensional architecture to organize business entiti
 ### ⚙️ Technical Highlights
 - Processed ~2.4M raw event records across user activity and transactional workflows
 - Built session- and order-item-grain models to ensure analytical consistency and prevent metric fan-out
-- Applied dbt materialization strategies optimized for BigQuery and downstream BI workloads
+- Implemented BigQuery-optimized incremental fact models using merge strategy, date partitioning, clustering, and lookback windows to handle late-arriving data
 
 ### 🛠 Engineering Best Practices
 - **Data Quality:** Implemented business rule tests for primary keys and foreign key relationships. Created a custom `not_negative` generic test to prevent anomalous values for attributes like price and cost.

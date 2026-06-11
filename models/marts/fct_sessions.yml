@@ -8,6 +8,18 @@ models:
       [Data Grain] Each row represents an independent user session.
       [Business Value] Aggregates underlying pageviews and events. Designed specifically for building key growth metrics like 'User Funnel' and 'Cart Abandonment Rate' in downstream BI tools.
 
+    config:
+      materialized: "incremental"
+      incremental_strategy: "merge"
+      partition_by:
+        field: "session_start_date"
+        data_type: "date"
+      cluster_by: ["traffic_source", "user_id"]
+      meta:
+        grain: "One row per session"
+        primary_key: "session_id"
+        refresh_logic: "Reprocesses a 3-day lookback window based on session_start_at_utc."
+
     columns:
       # ==========================================
       # Primary & Foreign Keys
@@ -90,7 +102,7 @@ models:
                 quote: false
 
       # ==========================================
-      # Timestamps
+      # Timestamps & Date
       # ==========================================
       - name: session_start_at_utc
         description: "Session start time (UTC). The timestamp of the first event triggered under this session_id."
@@ -99,4 +111,10 @@ models:
 
       - name: purchase_at_utc
         description: "Timestamp of successful payment (UTC). NULL if no purchase was made during this session."
+
+      - name: session_start_date
+        description: "Date derived from session_start_at_utc. Used as the BigQuery partition field."
+        tests:
+          - not_null
+
       
