@@ -144,3 +144,25 @@ dbt deps
 dbt run
 dbt test
 ```
+
+### 🔮 BI Semantic Layer Design
+
+This project includes a LookML-style semantic layer design to demonstrate how dbt marts can be consumed by BI tools such as Looker.
+
+The semantic layer focuses on:
+- reusable metric definitions: GMV, net sales, AOV, return rate, conversion rate, and LTV
+- clear explore design based on business analysis workflows
+- explicit primary keys and join relationships to avoid fanout
+- separation of responsibilities between dbt transformation logic and BI-facing metric definitions
+
+| Metric | LookML Measure | Definition |
+|---|---|---|
+| GMV | `fct_order_items.gmv` | Sum of `sale_price` before excluding cancelled/returned items |
+| Net Sales | `fct_order_items.net_sales` | Sum of `net_sales_amount` |
+| AOV | `fct_order_items.aov` | Net sales / distinct orders |
+| Return Rate | `fct_order_items.return_rate` | Returned order items / total order items |
+| Conversion Rate | `fct_sessions.conversion_rate` | Purchased sessions / total sessions |
+| LTV_7d | `mart_user_lifetime_metrics.avg_ltv_7d` | Average `ltv_7d` per user |
+| LTV_360d | `mart_user_lifetime_metrics.avg_ltv_360d` | Average `ltv_360d` per user |
+
+Note: The LookML files are provided as implementation-ready design artifacts. They were not deployed to a licensed Looker instance.
