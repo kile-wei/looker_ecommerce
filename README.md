@@ -1,10 +1,17 @@
-# Looker E-Commerce Data Warehouse (dbt)
+# Production-Style E-Commerce Analytics Warehouse with dbt and BigQuery
 
 ![dbt Cloud](https://img.shields.io/badge/dbt-Cloud-orange)
 ![BigQuery](https://img.shields.io/badge/BigQuery-Google-blue)
 ![dbt CI](https://github.com/BigFlagger233/looker_ecommerce/actions/workflows/dbt_ci.yml/badge.svg)
 
-A production-style analytics engineering project built with dbt and BigQuery, transforming raw e-commerce event data into a business-ready warehouse optimized for BI analytics and downstream reporting.
+A modern analytics engineering portfolio project demonstrating dbt modeling, BigQuery optimization, CI/CD, data quality, and LookML-style semantic layer design.
+
+### 💪 What This Project Demonstrates
+- **Scalable dbt Architecture:** Built an end-to-end dbt project using staging, intermediate, and marts layers, following dbt-labs recommended structure and modular SQL modeling patterns.
+- **Cost-Aware BigQuery Engineering:** Implemented incremental materializations, date partitioning, clustering, and lookback windows to reduce unnecessary full-table rebuilds and handle late-arriving records.
+- **BI-Ready Mart Design:** Defined clear analytical grains such as order-item and session grain, then delivered selected denormalized OBT-style marts to simplify BI consumption and reduce repetitive joins.
+- **Data Quality & Governance:** Added source freshness checks, schema tests, relationship tests, and custom Jinja-based tests such as `not_negative` to improve trust in downstream reporting.
+- **Semantic Layer Design:** Created LookML-style modeling artifacts to define governed BI metrics such as GMV, net sales, AOV, return rate, conversion rate, and LTV without claiming production Looker deployment.
 
 **Datasource:** Google BigQuery Public Dataset (`bigquery-public-data.thelook_ecommerce`)
 
@@ -24,89 +31,43 @@ TheLook is a fictitious B2C eCommerce clothing site developed by the Looker team
 - **Marts Layer:** Final One Big Tables (OBTs) prepared for downstream BI tools and applications.
 
 ### 💡 Dimensional Modeling & OBT Delivery
-Designed a Kimball-inspired dimensional architecture to organize business entities (identifying core facts and dimensions). To optimize for modern columnar databases and downstream BI tool performance, the final marts layer is delivered as highly denormalized **One Big Tables (OBTs)** (e.g., `fct_order_items`), eliminating the need for complex joins at the BI layer.
+Designed a Kimball-inspired modeling approach to define clear business entities, analytical grains, facts, and dimensions. Instead of serving a fully normalized star schema to BI users, selected marts are delivered as denormalized OBT-style models optimized for BigQuery and dashboard consumption.
+
+For example, `fct_order_items` is an order-item-grain denormalized fact model that combines transactional measures with commonly used user, order, and product attributes. This reduces repetitive joins in BI tools while preserving a clear analytical grain.
 
 ### 📊 Core Business Assets
-- `dim_users_metrics`: Calculates LTV, margin, and order frequency across 7, 30, 90, 180, and 360-day windows. Empowers marketing teams to conduct cohort analysis by various dimensions effortlessly.
+- `mart_user_lifetime_metrics`: Calculates LTV, margin, and order frequency across 7, 30, 90, 180, and 360-day windows. Empowers marketing teams to conduct cohort analysis by various dimensions effortlessly.
 - `fct_sessions`: Aggregates raw event logs and constructs funnel statuses based on the session grain. Supports conversion funnel and abandoned cart rate analysis.
 - `fct_order_items`: Applies the OBT schema, integrating transactional metrics with user and product dimensions. Supports GMV and margin analysis directly.
 
+| Model | Grain | Primary Key | Refresh | Downstream Use |
+|---|---|---|---|---|
+| fct_order_items | One row per order item | order_item_id | Incremental daily | Revenue, GMV, margin analysis |
+| fct_sessions | One row per session | session_id | Incremental daily | Funnel and conversion analysis |
+| mart_user_lifetime_metrics | One row per user | user_id | Daily | LTV, retention, customer segmentation |
+
 ### ⚙️ Technical Highlights
-- Processed ~2.4M raw event records across user activity and transactional workflows
-- Built session- and order-item-grain models to ensure analytical consistency and prevent metric fan-out
-- Implemented BigQuery-optimized incremental fact models using merge strategy, date partitioning, clustering, and lookback windows to handle late-arriving data
+- Processed ~2.4M raw event records across user activity and transactional workflows.
+- Built session-grain and order-item-grain models to ensure analytical consistency and prevent metric fan-out.
+- Implemented BigQuery incremental models using `merge` strategy, date partitioning, clustering, and lookback windows to handle late-arriving records.
+- Designed denormalized OBT-style marts to reduce repetitive BI-layer joins and leverage BigQuery's columnar storage for selective column scanning.
+- Configured idempotent transformation patterns with stable unique keys so incremental pipelines can be safely rerun without creating duplicate records.
+
 
 ### 🛠 Engineering Best Practices
 - **Data Quality:** Implemented business rule tests for primary keys and foreign key relationships. Created a custom `not_negative` generic test to prevent anomalous values for attributes like price and cost.
 - **DRY Principle:** Applied Jinja macros to handle repetitive data cleaning tasks, session aggregations, and custom tests.
 - **Documentation:** Built comprehensive YML schema descriptions for all core business models.
 
-### 🛡️ CI/CD with GitHub Actions
+### 🛡️ CI/CD & Data Quality Gates
 
-This project includes a GitHub Actions workflow to automatically validate dbt changes before they are merged into the `main` branch.
+This project uses GitHub Actions to validate dbt changes before they are merged into `main`.
 
-The CI workflow is triggered on every pull request to `main`.
-
-#### CI Workflow
-
-The workflow runs the following dbt commands:
-
-```bash
-dbt deps
-dbt compile --target ci
-dbt build --target ci
-```
-
-#### What the CI Validates
-
-The CI pipeline validates that:
-
-- dbt package dependencies can be installed successfully
-- SQL models and Jinja macros can be compiled
-- dbt models can be built in BigQuery
-- data quality tests pass before merging
-- broken model dependencies are caught during pull request review
-
-#### BigQuery Environment Isolation
-
-CI builds dbt models into an isolated BigQuery dataset using the pull request number:
-
-```text
-dbt_ci_pr_<pull_request_number>
-```
-
-This prevents pull request validation from overwriting development or production tables.
-
-#### Credential Management
-
-BigQuery credentials are managed securely through GitHub Secrets.
-
-The workflow uses:
-
-```text
-GCP_PROJECT_ID
-GCP_SERVICE_ACCOUNT_JSON
-```
-
-No service account key or credential file is committed to the repository.
-
-#### Current CI Scope
-
-The current implementation uses a baseline CI approach:
-
-```bash
-dbt build --target ci
-```
-
-This ensures the full dbt project can be built and tested successfully in a controlled CI environment.
-
-A future enhancement is to introduce slim CI with dbt state comparison:
-
-```bash
-dbt build --select state:modified+ --defer --state
-```
-
-This would reduce BigQuery cost by only building modified models and their downstream dependencies.
+- **Automated PR Validation:** Runs `dbt deps`, `dbt compile`, and `dbt build` on every pull request to validate model dependencies, SQL compilation, and data tests.
+- **Isolated BigQuery CI Environment:** Builds PR changes into a temporary dataset named `dbt_ci_pr_<PR_NUMBER>` to avoid overwriting development or production datasets.
+- **Quality Gates:** Blocks merges when dbt model builds, schema tests, custom tests, or dependency checks fail.
+- **Secure Credential Management:** Uses GitHub Secrets to manage BigQuery service account credentials. No credential files are committed to the repository.
+- **Future Improvement:** Introduce dbt Slim CI with state comparison to reduce BigQuery cost by building only modified models and downstream dependencies.
 
 ### 📂 Repository Structure
 The project directory strictly follows the dbt-labs recommended structure for scalable modeling:
@@ -123,8 +84,8 @@ looker_ecommerce/
 │   └── marts/            # Business layer: Highly denormalized OBTs & Kimball dimensions
 │   │   ├── fct_order_items.yml
 │   │   ├── fct_order_items.sql
-│   │   ├── dim_users_metrics.yml
-│   │   └── dim_users_metrics.sql ...
+│   │   ├── mart_user_lifetime_metrics.yml
+│   │   └── mart_user_lifetime_metrics.sql ...
 ├── macros/               # Jinja macros for DRY code
 │   └── not_negative.sql  # Custom generic test macro
 ├── tests/                # Custom singular data tests
