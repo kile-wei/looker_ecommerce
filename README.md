@@ -118,7 +118,7 @@ The semantic layer focuses on:
 
 | Metric | LookML Measure | Definition |
 |---|---|---|
-| GMV | `fct_order_items.gmv` | Sum of `sale_price` before excluding cancelled/returned items |
+| GMV | `fct_order_items.gmv` | Sum of `sale_price` including cancelled/returned items |
 | Net Sales | `fct_order_items.net_sales` | Sum of `net_sales_amount` |
 | AOV | `fct_order_items.aov` | Net sales / distinct orders |
 | Return Rate | `fct_order_items.return_rate` | Returned order items / total order items |

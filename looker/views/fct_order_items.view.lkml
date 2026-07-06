@@ -58,7 +58,7 @@ view: fct_order_items {
     type: sum
     sql: ${TABLE}.sale_price ;;
     value_format_name: usd
-    description: "GMV = sum of sale_price before excluding cancelled or returned items."
+    description: "GMV = Sum of sale_price including cancelled/returned items."
   }
 
   measure: net_sales {
