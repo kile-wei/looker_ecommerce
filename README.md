@@ -4,6 +4,22 @@
 ![BigQuery](https://img.shields.io/badge/BigQuery-Google-blue)
 ![dbt CI](https://github.com/BigFlagger233/looker_ecommerce/actions/workflows/dbt_ci.yml/badge.svg)
 
+### 🇯🇵 プロジェクト概要（日本語）
+
+本プロジェクトは、dbt と BigQuery を用いた本番運用を想定したECサイト向けアナリティクス基盤のポートフォリオです。約240万件のイベント・トランザクションデータを対象に、staging / intermediate / marts の3層アーキテクチャでモデリングを行い、BIツールでそのまま利用可能な非正規化マート（OBT）を提供しています。
+
+主なポイント：
+
+- **コスト最適化**：incremental モデル（merge戦略）、日付パーティショニング、クラスタリングにより、BigQuery のスキャン量とフルリビルドを削減。遅延到着データにも lookback window で対応
+- **データ品質**：source freshness チェック、スキーマテスト、Jinja による独自 generic テスト（`not_negative` 等）を実装し、下流レポートの信頼性を担保
+- **CI/CD**：GitHub Actions により、PR ごとに独立した BigQuery データセット上で `dbt build` を実行。テスト失敗時はマージをブロックする品質ゲートを構築
+- **セマンティックレイヤー**：GMV・純売上・AOV・返品率・CVR・LTV などの指標を LookML 形式で定義し、dbt の変換ロジックと BI 側の指標定義の責務を分離
+- **冪等性の担保**：安定した unique key に基づく設計により、incremental パイプラインの安全な再実行が可能
+
+<img width="3176" height="1606" alt="dbt_lineage" src="https://github.com/user-attachments/assets/fa96bfdb-707d-49ef-ae4d-0ecd41efbab6" />
+
+詳細は以下の英語ドキュメントをご覧ください。
+
 A modern analytics engineering portfolio project demonstrating dbt modeling, BigQuery optimization, CI/CD, data quality, and LookML-style semantic layer design.
 
 ### 💪 What This Project Demonstrates
@@ -24,8 +40,6 @@ TheLook is a fictitious B2C eCommerce clothing site developed by the Looker team
 - **Web Events:** Granular user session logs, page views, and conversion touchpoints.
 
 ### 🏗 Architecture & Lineage
-<img width="3176" height="1606" alt="dbt_lineage" src="https://github.com/user-attachments/assets/fa96bfdb-707d-49ef-ae4d-0ecd41efbab6" />
-
 - **Staging Layer:** Basic data cleaning. Unifies naming conventions and standardizes timestamp handling into UTC format.
 - **Intermediate Layer:** Processes complex join and aggregation logic.
 - **Marts Layer:** Final One Big Tables (OBTs) prepared for downstream BI tools and applications.
