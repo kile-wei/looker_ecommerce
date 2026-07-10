@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   dbt-ci:
     name: dbt compile and build
@@ -13,7 +16,7 @@ jobs:
     env:
       DBT_PROFILES_DIR: ./.github/dbt
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      BQ_CI_DATASET: dbt_ci_pr_${{ github.event.pull_request.number }}
+      BQ_CI_DATASET: dbt_ci_pr_${{ github.event.pull_request.number }}_${{ github.run_id }}
 
     steps:
       - name: Checkout PR branch
@@ -27,15 +30,23 @@ jobs:
       - name: Install dbt-bigquery
         run: |
           python -m pip install --upgrade pip
-          pip install dbt-bigquery
+          pip install dbt-bigquery==1.11.3
 
-      - name: Create BigQuery keyfile
-        run: |
-          mkdir -p ./.github/dbt
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > ./.github/dbt/gcp_keyfile.json
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}'
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'
+
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'
 
       - name: Create dbt profiles.yml
         run: |
+          mkdir -p ./.github/dbt
           cat > ./.github/dbt/profiles.yml <<EOF
           default:
             target: ci
@@ -45,7 +56,7 @@ jobs:
                 method: service-account
                 project: ${GCP_PROJECT_ID}
                 dataset: ${BQ_CI_DATASET}
-                keyfile: ./.github/dbt/gcp_keyfile.json
+                keyfile: ${{ steps.auth.outputs.credentials_file_path }}
                 threads: 4
                 timeout_seconds: 300
                 location: US
@@ -59,3 +70,29 @@ jobs:
 
       - name: Build dbt project
         run: dbt build --target ci
+
+      - name: Test incremental execution
+        run: |
+          dbt build \
+            --target ci \
+            --select fct_order_items fct_sessions
+
+      - name: Check source freshness
+        run: dbt source freshness --target ci
+
+      - name: Clean up CI datasets
+        if: always()
+        run: |
+          for DATASET in \
+            "${BQ_CI_DATASET}" \
+            "${BQ_CI_DATASET}_staging" \
+            "${BQ_CI_DATASET}_intermediate" \
+            "${BQ_CI_DATASET}_marts"
+          do
+            echo "Deleting ${DATASET}"
+
+            bq rm \
+              --recursive \
+              --force \
+              "${GCP_PROJECT_ID}:${DATASET}" || true
+          done

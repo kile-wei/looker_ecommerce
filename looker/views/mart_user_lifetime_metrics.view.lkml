@@ -36,10 +36,14 @@ view: mart_user_lifetime_metrics {
     description: "Total number of users."
   }
 
+  dimension: has_purchased {
+    type: yesno
+    sql: ${TABLE}.first_order_time IS NOT NULL ;;
+  }
+  
   measure: purchasing_users {
     type: count
-    filters: [first_order_time: "-NULL"]
-    description: "Number of users who have made at least one purchase."
+    filters: [has_purchased: "yes"]
   }
 
   # ==========================================
@@ -63,17 +67,19 @@ view: mart_user_lifetime_metrics {
   # ==========================================
   # Measures: Orders Amount
   # ==========================================
-  measure: avg_orders_amount_7d { type: average sql: ${TABLE}.orders_amount_7d ;; description: "Average number of orders placed within 7 days of user creation." }
-  measure: avg_orders_amount_30d { type: average sql: ${TABLE}.orders_amount_30d ;; description: "Average number of orders placed within 30 days of user creation." }
-  measure: avg_orders_amount_90d { type: average sql: ${TABLE}.orders_amount_90d ;; description: "Average number of orders placed within 90 days of user creation." }
-  measure: avg_orders_amount_180d { type: average sql: ${TABLE}.orders_amount_180d ;; description: "Average number of orders placed within 180 days of user creation." }
-  measure: avg_orders_amount_360d { type: average sql: ${TABLE}.orders_amount_360d ;; description: "Average number of orders placed within 360 days of user creation." }
+  measure: avg_orders_amount_7d { type: average sql: ${TABLE}.orders_amount_7d ;; description: "Average number of orders placed within 7 days of the user's first purchase." }
+  measure: avg_orders_amount_30d { type: average sql: ${TABLE}.orders_amount_30d ;; description: "Average number of orders placed within 30 days of the user's first purchase." }
+  measure: avg_orders_amount_90d { type: average sql: ${TABLE}.orders_amount_90d ;; description: "Average number of orders placed within 90 days of the user's first purchase." }
+  measure: avg_orders_amount_180d { type: average sql: ${TABLE}.orders_amount_180d ;; description: "Average number of orders placed within 180 days of the user's first purchase." }
+  measure: avg_orders_amount_360d { type: average sql: ${TABLE}.orders_amount_360d ;; description: "Average number of orders placed within 360 days of the user's first purchase." }
 
   # ==========================================
   # Measures: Number of Items
   # ==========================================
-  measure: avg_num_of_item_7d { type: average sql: ${TABLE}.num_of_item_7d ;; description: "Average number of item units purchased within 7 days of user creation." }
-  measure: avg_num_of_item_30d { type: average sql: ${TABLE}.num_of_item_30d ;; description: "Average number of item units purchased within 30 days of user creation." }
-  measure: avg_num_of_item_90d { type: average sql: ${TABLE}.num_of_item_90d ;; description: "Average number of item units purchased within 90 days of user creation." }
-  measure: avg_num_of_item_180d { type: average sql: ${TABLE}.num_of_item_180d ;; description: "Average number of item units purchased within 180 days of user creation." }
-  measure: avg_num_of_item_360d { type: average sql: ${TABLE}.num_of_item_360d ;; description: "Average number of item units purchased within 360 days of user creation." }
+  measure: avg_num_of_item_7d { type: average sql: ${TABLE}.num_of_item_7d ;; description: "Average number of item units purchased within 7 days of the user's first purchase." }
+  measure: avg_num_of_item_30d { type: average sql: ${TABLE}.num_of_item_30d ;; description: "Average number of item units purchased within 30 days of the user's first purchase." }
+  measure: avg_num_of_item_90d { type: average sql: ${TABLE}.num_of_item_90d ;; description: "Average number of item units purchased within 90 days of the user's first purchase." }
+  measure: avg_num_of_item_180d { type: average sql: ${TABLE}.num_of_item_180d ;; description: "Average number of item units purchased within 180 days of the user's first purchase." }
+  measure: avg_num_of_item_360d { type: average sql: ${TABLE}.num_of_item_360d ;; description: "Average number of item units purchased within 360 days of the user's first purchase." }
+
+}

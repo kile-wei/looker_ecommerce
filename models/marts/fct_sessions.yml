@@ -31,7 +31,7 @@ models:
           - not_null
 
       - name: user_id
-        description: "Foreign key linking to dim_users. Note: This field may be NULL for anonymous/guest visitors who have not logged in."
+        description: "Foreign key linking to mart_user_lifetime_metrics. Note: This field may be NULL for anonymous/guest visitors who have not logged in."
 
       # ==========================================
       # Session Attributes (Dimensions)

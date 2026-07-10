@@ -1,4 +1,4 @@
-{% macro clean_string(column_n, default_v="Unkown") %}
+{% macro clean_string(column_n, default_v="Unknown") %}
 
     case
         when lower(trim({{ column_n }})) in ('', 'null', 'n/a', 'none', '-')

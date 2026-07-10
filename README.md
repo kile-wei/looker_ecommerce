@@ -89,20 +89,25 @@ The project directory strictly follows the dbt-labs recommended structure for sc
 ```text
 looker_ecommerce/
 ├── models/
-│   ├── staging/          # Base layer: Casting, renaming, and light cleaning
+│   ├── staging/          # Base layer: renaming, and light cleaning
 │   │   ├── schema.yml
 │   │   ├── stg_users.sql
 │   │   └── stg_orders.sql ...
 │   ├── intermediate/     # Logic layer: Entity-level aggregations and complex joins
-│   │   └── int_users_purchase.sql ...
+│   │   └── int_user_order_metrics.sql ...
 │   └── marts/            # Business layer: Highly denormalized OBTs & Kimball dimensions
 │   │   ├── fct_order_items.yml
 │   │   ├── fct_order_items.sql
 │   │   ├── mart_user_lifetime_metrics.yml
 │   │   └── mart_user_lifetime_metrics.sql ...
-├── macros/               # Jinja macros for DRY code
-│   └── not_negative.sql  # Custom generic test macro
-├── tests/                # Custom singular data tests
+├── macros/
+│   ├── clean_string.sql
+│   └── first_not_null_value.sql
+├── tests/
+│   ├── assert_funnel_time_is_sequential_in_sessions.sql
+│   ├── assert_ltv_is_cumulative_in_users_metrics.sql
+│   └── generic/
+│       └── not_negative.sql
 ├── dbt_project.yml       # Global project configurations
 └── packages.yml          # dbt-utils and other package dependencies
 ```

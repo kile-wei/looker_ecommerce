@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_order_items_enriched
-    description: "A wide table combining order items with orders, users, and products. The grain is order_item_id. This model serves as the foundation for downstream GMV and product margin calculations."
+    description: "A wide table combining order items with orders. The grain is order_item_id. This model serves as the foundation for downstream GMV and product margin calculations."
     columns:
       - name: order_item_id
         description: "The primary key for the order item."
