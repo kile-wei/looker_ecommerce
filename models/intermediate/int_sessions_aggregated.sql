@@ -39,7 +39,7 @@ with
             max(created_at_utc) as session_end_at_utc,
             count(distinct event_id) as events_in_session
 
-        from {{ ref("stg_events") }}
+        from events
         group by session_id
     )
 

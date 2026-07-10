@@ -41,6 +41,7 @@ with
 
             greatest(
                 o.created_at_utc,
+                oi.created_at_utc,
                 coalesce(oi.shipped_at_utc, o.created_at_utc),
                 coalesce(oi.delivered_at_utc, o.created_at_utc),
                 coalesce(oi.returned_at_utc, o.created_at_utc)
